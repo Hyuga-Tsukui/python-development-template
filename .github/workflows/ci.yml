@@ -1,0 +1,35 @@
+name: Test with Nix
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Nix Flake
+        run: nix --version # バージョン確認（オプション）
+
+      - name: Install dependencies with Poetry
+        run: |
+          nix develop -c make initialize  # 一度だけ依存関係をインストール
+
+      - name: Run Linter
+        run: |
+          nix develop -c make lint  # Linter実行
+
+      - name: Run Tests
+        run: |
+          nix develop -c make test  # テスト実行
